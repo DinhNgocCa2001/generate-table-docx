@@ -25,13 +25,12 @@ const ExportWord = () => {
 
     let description = null;
     let jsonFormat = null;
-    let type = null;
-    let hasNotNull = false; // Thêm để theo dõi @NotNull
+    let hasNotNull = false;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
-      // Bắt @Schema
+      // Bắt @Schema(description = "...")
       const schemaMatch = line.match(
         /@Schema\s*\(\s*description\s*=\s*"(.+?)"\s*\)/
       );
@@ -39,20 +38,20 @@ const ExportWord = () => {
         description = schemaMatch[1];
       }
 
-      // Bắt @JsonFormat
+      // Bắt pattern trong @JsonFormat(...) bất kể có thêm timezone hay không
       const jsonFormatMatch = line.match(
-        /@JsonFormat\s*\(\s*pattern\s*=\s*(Const\.\w+)\s*\)/
+        /@JsonFormat\([^)]*pattern\s*=\s*(Const\.\w+)/
       );
       if (jsonFormatMatch) {
         jsonFormat = jsonFormatMatch[1];
       }
 
-      // Bắt @NotNull
+      // Kiểm tra có @NotNull không
       if (line.includes("@NotNull")) {
         hasNotNull = true;
       }
 
-      // Bắt dòng private
+      // Tìm dòng khai báo field: private <type> <name>;
       const fieldMatch = line.match(/private\s+(\w+)\s+(\w+);/);
       if (fieldMatch) {
         const dataType = fieldMatch[1];
@@ -60,7 +59,7 @@ const ExportWord = () => {
 
         let desWithFormat = description || "";
 
-        // Nếu có định dạng JSON format
+        // Gắn định dạng ngày nếu có @JsonFormat
         if (jsonFormat === "Const.DATE_FORMAT2") {
           desWithFormat += " (dd/MM/yyyy)";
         } else if (jsonFormat === "Const.DATE_TIME_FORMAT2") {
@@ -75,7 +74,7 @@ const ExportWord = () => {
           notNull: hasNotNull ? "R" : "O",
         });
 
-        // Reset lại
+        // Reset lại cho field tiếp theo
         description = null;
         jsonFormat = null;
         type = null;
@@ -125,7 +124,7 @@ const ExportWord = () => {
         new TableRow({
           children: [
             new TableCell({
-              children: [new Paragraph(String(textFont + "." + stt))],
+              children: [new Paragraph(String(textFont + stt))],
             }),
             new TableCell({ children: [new Paragraph(item.name)] }),
             new TableCell({ children: [new Paragraph(item.type || "")] }),
