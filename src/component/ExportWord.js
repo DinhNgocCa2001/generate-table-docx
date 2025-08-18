@@ -47,7 +47,7 @@ const ExportWord = () => {
       }
 
       // Kiểm tra có @NotNull không
-      if (line.includes("@NotNull")) {
+      if (line.includes("@NotNull") || line.includes("@NotBlank")) {
         hasNotNull = true;
       }
 
@@ -77,7 +77,7 @@ const ExportWord = () => {
         // Reset lại cho field tiếp theo
         description = null;
         jsonFormat = null;
-        type = null;
+        //type = null;
         hasNotNull = false;
       }
     }
